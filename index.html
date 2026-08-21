@@ -1,0 +1,939 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>폰쉼 스마트폰 과의존 자가진단</title>
+  <style>
+    @font-face {
+      font-family: "PhoneShim Pretendard";
+      src: url("https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/font/pretendard_regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "PhoneShim Pretendard";
+      src: url("https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/font/pretendard_medium.otf") format("opentype");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "PhoneShim Pretendard";
+      src: url("https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/font/pretendard_semibold.otf") format("opentype");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "PhoneShim Pretendard";
+      src: url("https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/font/pretendard_bold.otf") format("opentype");
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "PhoneShim Inter";
+      src: url("https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/font/inter_regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: "PhoneShim Inter";
+      src: url("https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/font/inter_bold.ttf") format("truetype");
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --ink: #18221f;
+      --muted: #66736f;
+      --line: #dce6df;
+      --paper: #fbfdf9;
+      --mint: #77c8a8;
+      --teal: #1f8a8a;
+      --coral: #f26d5b;
+      --amber: #f5b94c;
+      --sky: #82b7e8;
+      --shadow: 0 22px 60px rgba(24, 34, 31, .14);
+      --question-font: 46px;
+      --answer-font: 19px;
+      font-family: "PhoneShim Pretendard", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(130, 183, 232, .26), transparent 32rem),
+        radial-gradient(circle at 82% 24%, rgba(242, 109, 91, .18), transparent 28rem),
+        linear-gradient(135deg, #f4fbf7 0%, #fffaf2 58%, #eef8fb 100%);
+      overflow-x: hidden;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(100%, 1240px);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: clamp(16px, 3vh, 34px) 28px;
+      display: grid;
+      align-items: center;
+    }
+
+    .app {
+      position: relative;
+      min-height: min(800px, calc(100svh - clamp(32px, 6vh, 68px)));
+      border: 1px solid rgba(24, 34, 31, .08);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, .78);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .topbar {
+      height: 88px;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(24, 34, 31, .08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: block;
+      object-fit: cover;
+      background: #fff;
+      box-shadow: 0 12px 24px rgba(31, 138, 138, .28);
+    }
+
+    .progress-wrap {
+      width: min(34vw, 380px);
+      display: grid;
+      gap: 7px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-family: "PhoneShim Inter", "PhoneShim Pretendard", sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      background: #e8eee9;
+      overflow: hidden;
+    }
+
+    .bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--amber), var(--coral));
+      transition: width .45s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    main {
+      min-height: calc(min(800px, calc(100svh - clamp(32px, 6vh, 68px))) - 88px);
+      display: grid;
+    }
+
+    .screen {
+      grid-area: 1 / 1;
+      padding: clamp(34px, 4.2vw, 72px);
+      display: grid;
+      align-content: center;
+      gap: 30px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(30px) scale(.985);
+      transition: opacity .28s ease, transform .42s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0) scale(1);
+    }
+
+    .intro {
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
+      align-items: center;
+    }
+
+    .intro-copy {
+      display: grid;
+      gap: 30px;
+      align-content: center;
+    }
+
+    .intro-art {
+      width: min(100%, 430px);
+      aspect-ratio: 1 / 1;
+      min-height: 0;
+      justify-self: center;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(31, 138, 138, .12), rgba(245, 185, 76, .12)), #f7fcfb;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(24, 34, 31, .08);
+    }
+
+    .mascot {
+      position: absolute;
+      left: 50%;
+      top: 52%;
+      width: min(62%, 310px);
+      max-height: 78%;
+      object-fit: contain;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 26px 34px rgba(24, 34, 31, .18));
+      animation: floatMascot 4.6s ease-in-out infinite;
+    }
+
+    h1, h2 {
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.12;
+    }
+
+    h1 {
+      font-size: clamp(46px, 5vw, 82px);
+      max-width: 7em;
+    }
+
+    h2 {
+      font-size: var(--question-font);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 19px;
+    }
+
+    .question-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--teal);
+      font-family: "PhoneShim Inter", "PhoneShim Pretendard", sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(31, 138, 138, .1);
+    }
+
+    .answers {
+      display: grid;
+      gap: 14px;
+    }
+
+    .answer {
+      width: 100%;
+      height: 76px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .74);
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+    }
+
+    .answer:hover {
+      transform: translateY(-2px);
+      border-color: rgba(31, 138, 138, .45);
+      box-shadow: 0 12px 26px rgba(24, 34, 31, .08);
+    }
+
+    .answer.selected {
+      border-color: var(--teal);
+      background: rgba(31, 138, 138, .1);
+      box-shadow: 0 14px 28px rgba(31, 138, 138, .14);
+    }
+
+    .answer strong {
+      font-size: var(--answer-font);
+      line-height: 1.22;
+      word-break: keep-all;
+    }
+
+    .answer span {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #eef5f0;
+      color: var(--muted);
+      font-family: "PhoneShim Inter", "PhoneShim Pretendard", sans-serif;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .answer.selected span {
+      background: var(--teal);
+      color: #fff;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      min-height: 52px;
+    }
+
+    .btn {
+      width: 138px;
+      min-height: 52px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--teal);
+      box-shadow: 0 16px 30px rgba(31, 138, 138, .24);
+    }
+
+    .btn.ghost {
+      color: var(--ink);
+      background: rgba(24, 34, 31, .07);
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .result-layout {
+      grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr);
+      align-items: center;
+    }
+
+    .result-visual {
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .score-ring {
+      width: min(72vw, 340px);
+      aspect-ratio: 1;
+      margin: 0 auto;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--teal) calc(var(--score-pct) * 1%), #e9efeb 0);
+      position: relative;
+      transition: background .5s ease;
+    }
+
+    .result-mascot {
+      width: min(42vw, 190px);
+      max-height: 172px;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 24px rgba(24, 34, 31, .14));
+      animation: floatMascot 4.2s ease-in-out infinite;
+    }
+
+    .score-ring::before {
+      content: "";
+      position: absolute;
+      inset: 20px;
+      border-radius: inherit;
+      background: var(--paper);
+      box-shadow: inset 0 0 0 1px rgba(24, 34, 31, .05);
+    }
+
+    .score {
+      position: relative;
+      text-align: center;
+    }
+
+    .score b {
+      display: block;
+      font-family: "PhoneShim Inter", "PhoneShim Pretendard", sans-serif;
+      font-size: 84px;
+      line-height: .9;
+    }
+
+    .score small {
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .result-copy {
+      display: grid;
+      gap: 18px;
+    }
+
+    #questionText {
+      min-height: 118px;
+      display: flex;
+      align-items: center;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+
+    #resultTitle {
+      min-height: 116px;
+      display: flex;
+      align-items: center;
+      font-size: var(--question-font);
+      word-break: keep-all;
+    }
+
+    #resultDescription {
+      min-height: 104px;
+      word-break: keep-all;
+    }
+
+    @media (min-width: 1500px) and (min-height: 960px) {
+      .shell {
+        width: 1320px;
+      }
+
+      .app {
+        min-height: 880px;
+      }
+
+      main {
+        min-height: 792px;
+      }
+
+      .screen {
+        padding: 76px 88px;
+      }
+
+      .answer {
+        height: 82px;
+      }
+    }
+
+    @media (min-width: 900px) and (max-height: 900px) {
+      .shell {
+        padding-top: 14px;
+        padding-bottom: 14px;
+      }
+
+      .app {
+        min-height: calc(100svh - 28px);
+        border-radius: 22px;
+      }
+
+      .topbar {
+        height: 76px;
+        padding: 16px 26px;
+      }
+
+      .logo {
+        width: 42px;
+        height: 42px;
+      }
+
+      main {
+        min-height: calc(100svh - 104px);
+      }
+
+      .screen {
+        padding: 34px 58px;
+        gap: 22px;
+      }
+
+      .intro-art {
+        width: min(100%, 330px);
+      }
+
+      .intro-copy {
+        gap: 22px;
+      }
+
+      h1 {
+        font-size: clamp(44px, 4.4vw, 68px);
+      }
+
+      p {
+        font-size: 17px;
+        line-height: 1.6;
+      }
+
+      #questionText,
+      #resultTitle {
+        min-height: 94px;
+      }
+
+      .answers {
+        gap: 10px;
+      }
+
+      .answer {
+        height: 66px;
+        padding: 13px 20px;
+      }
+
+      .actions {
+        min-height: 48px;
+      }
+
+      .btn {
+        min-height: 48px;
+      }
+
+      .score-ring {
+        width: min(42vh, 300px);
+      }
+
+      .result-mascot {
+        width: min(20vw, 150px);
+        max-height: 132px;
+      }
+
+      .result-copy {
+        gap: 14px;
+      }
+
+      #resultDescription {
+        min-height: 86px;
+        line-height: 1.58;
+      }
+    }
+
+    .level {
+      width: fit-content;
+      padding: 9px 14px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--teal);
+      font-weight: 900;
+    }
+
+    .sources {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @keyframes floatMascot {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50% { transform: translate(-50%, -50%) translateY(-12px); }
+    }
+
+    .result-mascot {
+      animation-name: resultFloat;
+    }
+
+    @keyframes resultFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        padding: 0;
+      }
+
+      .app {
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .topbar {
+        height: auto;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .progress-wrap {
+        width: 100%;
+      }
+
+      main {
+        min-height: calc(100vh - 122px);
+      }
+
+      .screen,
+      .intro,
+      .result-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .screen {
+        padding: 28px 20px;
+        gap: 22px;
+      }
+
+      .intro-art {
+        width: min(100%, 240px);
+        order: -1;
+      }
+
+      .mascot {
+        width: min(62%, 210px);
+      }
+
+      h1 {
+        font-size: clamp(36px, 12vw, 54px);
+      }
+
+      #questionText,
+      #resultTitle {
+        min-height: 112px;
+      }
+
+      .answer {
+        height: 68px;
+        padding: 14px 16px;
+      }
+
+      .btn {
+        width: calc(50% - 6px);
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="app" aria-live="polite">
+      <header class="topbar">
+        <div class="brand">
+          <img class="logo" src="https://avatars.githubusercontent.com/u/297063426?s=400&amp;u=5b3a39bf56631f8d26a0f64d78f9d2e005af00a4&amp;v=4" alt="폰쉼 로고">
+          <span>폰쉼 - 자가진단</span>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span id="stepText">시작</span>
+            <span id="countText">0/15</span>
+          </div>
+          <div class="progress"><div class="bar" id="bar"></div></div>
+        </div>
+      </header>
+
+      <main>
+        <section class="screen intro active" id="intro">
+          <div class="intro-copy">
+            <h1>스마트폰 과의존 자가진단</h1>
+            <p>최근 스마트폰 사용 후 경험을 떠올리며 가장 가까운 답을 골라주세요. 총 15문항이며, 한 문항씩 차분히 진행됩니다.</p>
+            <div class="actions">
+              <button class="btn primary" id="startBtn" type="button">진단 시작</button>
+            </div>
+          </div>
+          <div class="intro-art" aria-hidden="true">
+            <img class="mascot" src="https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/drawable-xxxhdpi/welcome_character_heart.png" alt="">
+          </div>
+        </section>
+
+        <section class="screen" id="questionScreen">
+          <div class="question-meta">
+            <span class="pill" id="domainText">생활 영향</span>
+            <span id="questionIndex">1 / 15</span>
+          </div>
+          <h2 id="questionText"></h2>
+          <div class="answers" id="answers"></div>
+          <div class="actions">
+            <button class="btn ghost" id="prevBtn" type="button">이전</button>
+            <button class="btn primary" id="nextBtn" type="button" disabled>다음</button>
+          </div>
+        </section>
+
+        <section class="screen result-layout" id="resultScreen">
+          <div class="result-visual">
+            <img class="result-mascot" id="resultMascot" src="https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/drawable-xxxhdpi/usage_time_character.png" alt="">
+            <div class="score-ring" id="scoreRing" style="--score-pct: 0">
+              <div class="score">
+                <b id="scoreValue">0</b>
+                <small>총점 / 60점</small>
+              </div>
+            </div>
+          </div>
+          <div class="result-copy">
+            <div class="level" id="levelText">결과</div>
+            <h2 id="resultTitle"></h2>
+            <p id="resultDescription"></p>
+            <div class="actions">
+              <button class="btn ghost" id="reviewBtn" type="button">답변 보기</button>
+              <button class="btn primary" id="restartBtn" type="button">다시 진단</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const questions = [
+      { text: "스마트폰의 지나친 사용으로 학교 성적이나 업무능력이 떨어진다.", domain: "일상생활장애" },
+      { text: "스마트폰을 사용하지 못하면 온 세상을 잃을 것 같은 생각이 든다.", domain: "금단" },
+      { text: "스마트폰을 사용할 때, '그만해야지'라고 생각은 하면서도 계속한다.", domain: "조절 실패" },
+      { text: "스마트폰이 없어도 불안하지 않다.", domain: "역채점", reverse: true },
+      { text: "수시로 스마트폰을 사용하다가 지적을 받은 적이 있다.", domain: "일상생활장애" },
+      { text: "가족이나 친구들과 함께 있는 것보다 스마트폰을 사용하는 것이 더 즐겁다.", domain: "가상세계지향" },
+      { text: "스마트폰 사용 시간을 줄이려고 해보았지만 실패한다.", domain: "조절 실패" },
+      { text: "스마트폰을 사용할 수 없게 된다면 견디기 힘들 것이다.", domain: "금단" },
+      { text: "스마트폰을 너무 자주 또는 오래 한다고 가족이나 친구들로부터 불평을 들은 적이 있다.", domain: "일상생활장애" },
+      { text: "스마트폰 사용에 많은 시간을 보내지 않는다.", domain: "역채점", reverse: true },
+      { text: "스마트폰이 옆에 없으면, 온종일 일 또는 공부가 손에 안 잡힌다.", domain: "금단" },
+      { text: "스마트폰을 사용하느라 지금 하는 일 또는 공부에 집중이 안 된 적이 있다.", domain: "일상생활장애" },
+      { text: "스마트폰 사용에 많은 시간을 보내는 것이 습관화되었다.", domain: "내성" },
+      { text: "스마트폰이 없으면 안절부절못하고 초조해진다.", domain: "금단" },
+      { text: "스마트폰 사용이 지금 하는 일 또는 공부에 방해가 되지 않는다.", domain: "역채점", reverse: true }
+    ];
+
+    const options = [
+      { label: "전혀 그렇지 않다", score: 1 },
+      { label: "그렇지 않다", score: 2 },
+      { label: "그렇다", score: 3 },
+      { label: "매우 그렇다", score: 4 }
+    ];
+
+    let current = 0;
+    let answers = Array(questions.length).fill(null);
+
+    const intro = document.querySelector("#intro");
+    const questionScreen = document.querySelector("#questionScreen");
+    const resultScreen = document.querySelector("#resultScreen");
+    const stepText = document.querySelector("#stepText");
+    const countText = document.querySelector("#countText");
+    const bar = document.querySelector("#bar");
+    const domainText = document.querySelector("#domainText");
+    const questionIndex = document.querySelector("#questionIndex");
+    const questionText = document.querySelector("#questionText");
+    const answersEl = document.querySelector("#answers");
+    const prevBtn = document.querySelector("#prevBtn");
+    const nextBtn = document.querySelector("#nextBtn");
+
+    function show(screen) {
+      [intro, questionScreen, resultScreen].forEach((el) => el.classList.remove("active"));
+      screen.classList.add("active");
+    }
+
+    function updateProgress() {
+      const answered = answers.filter((value) => value !== null).length;
+      const progress = Math.round((answered / questions.length) * 100);
+      bar.style.width = progress + "%";
+      countText.textContent = answered + "/" + questions.length;
+      stepText.textContent = resultScreen.classList.contains("active") ? "완료" : "진행 중";
+    }
+
+    function fitTextToBox(element, maxSize, minSize) {
+      element.style.fontSize = maxSize + "px";
+      let size = maxSize;
+      while ((element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth) && size > minSize) {
+        size -= 1;
+        element.style.fontSize = size + "px";
+      }
+    }
+
+    function fitAllText() {
+      const compactDesktop = window.innerWidth > 760 && window.innerHeight <= 900;
+      const questionMax = window.innerWidth <= 760 ? 34 : compactDesktop ? 40 : 46;
+      const questionMin = window.innerWidth <= 760 ? 24 : compactDesktop ? 29 : 32;
+      const answerMax = window.innerWidth <= 760 ? 17 : compactDesktop ? 17 : 19;
+      fitTextToBox(questionText, questionMax, questionMin);
+      document.querySelectorAll(".answer strong").forEach((label) => {
+        fitTextToBox(label, answerMax, 14);
+      });
+      const resultTitle = document.querySelector("#resultTitle");
+      if (resultTitle.textContent.trim()) {
+        fitTextToBox(resultTitle, questionMax, questionMin);
+      }
+    }
+
+    function renderQuestion() {
+      const item = questions[current];
+      domainText.textContent = item.domain;
+      questionIndex.textContent = (current + 1) + " / " + questions.length;
+      questionText.textContent = item.text;
+      answersEl.innerHTML = "";
+
+      options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "answer" + (answers[current] === index ? " selected" : "");
+        button.innerHTML = "<strong>" + option.label + "</strong><span>" + option.score + "</span>";
+        button.addEventListener("click", () => {
+          answers[current] = index;
+          renderQuestion();
+          setTimeout(() => {
+            if (current < questions.length - 1) {
+              current += 1;
+              renderQuestion();
+            } else {
+              showResult();
+            }
+          }, 230);
+        });
+        answersEl.appendChild(button);
+      });
+
+      requestAnimationFrame(fitAllText);
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = answers[current] === null;
+      nextBtn.textContent = current === questions.length - 1 ? "결과 보기" : "다음";
+      updateProgress();
+    }
+
+    function scoreAnswer(question, selectedIndex) {
+      const raw = selectedIndex + 1;
+      return question.reverse ? 5 - raw : raw;
+    }
+
+    function getTotal() {
+      return answers.reduce((sum, selectedIndex, index) => {
+        if (selectedIndex === null) return sum;
+        return sum + scoreAnswer(questions[index], selectedIndex);
+      }, 0);
+    }
+
+    function classify(total) {
+      if (total >= 44) {
+        return {
+          level: "고위험사용자군",
+          color: "#f26d5b",
+          image: "https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/drawable-xxxhdpi/appblocking_mascot_sleep.png",
+          title: "폰쉼으로 사용을 잠시 멈춰볼 때입니다",
+          description: "스마트폰 과의존 경향성이 높게 나타났습니다. 폰쉼 앱으로 사용 시간과 휴식 시간을 나누고, 잠금이나 집중 모드를 활용해 바로 쉬는 환경을 만들어보세요. 일상생활의 어려움이 계속된다면 전문가 상담도 함께 권합니다."
+        };
+      }
+      if (total >= 40) {
+        return {
+          level: "잠재적위험사용자군",
+          color: "#f5a623",
+          image: "https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/drawable-xxxhdpi/appblocking_mascot_daily_goal.png",
+          title: "폰쉼으로 사용 패턴을 정리해보세요",
+          description: "필요 이상으로 사용 시간이 길어지거나 집착이 커질 수 있는 단계입니다. 폰쉼 앱에서 목표 사용 시간과 휴식 알림을 설정해두면, 무심코 이어지는 사용을 끊고 계획적인 스마트폰 습관을 만들기 쉽습니다."
+        };
+      }
+      return {
+        level: "일반사용자군",
+        color: "#1f8a8a",
+        image: "https://raw.githubusercontent.com/umc-phoneshim/PhoneShim-Android/demo/app/src/main/res/drawable-xxxhdpi/usage_time_character.png",
+        title: "폰쉼으로 좋은 습관을 유지하세요",
+        description: "스마트폰 과의존 문제가 뚜렷하게 나타나지 않습니다. 지금의 안정적인 사용을 유지할 수 있도록 폰쉼 앱으로 가벼운 사용 점검과 휴식 알림을 설정해보세요."
+      };
+    }
+
+    function showResult() {
+      const total = getTotal();
+      const result = classify(total);
+      document.querySelector("#scoreValue").textContent = total;
+      document.querySelector("#scoreRing").style.setProperty("--score-pct", Math.round((total / 60) * 100));
+      document.querySelector("#scoreRing").style.background = "conic-gradient(" + result.color + " calc(var(--score-pct) * 1%), #e9efeb 0)";
+      document.querySelector("#levelText").textContent = result.level;
+      document.querySelector("#levelText").style.background = result.color;
+      document.querySelector("#resultTitle").textContent = result.title;
+      document.querySelector("#resultDescription").textContent = result.description;
+      document.querySelector("#resultMascot").src = result.image;
+      show(resultScreen);
+      updateProgress();
+      requestAnimationFrame(fitAllText);
+    }
+
+    document.querySelector("#startBtn").addEventListener("click", () => {
+      current = 0;
+      show(questionScreen);
+      renderQuestion();
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (current > 0) {
+        current -= 1;
+        renderQuestion();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (answers[current] === null) return;
+      if (current < questions.length - 1) {
+        current += 1;
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    document.querySelector("#restartBtn").addEventListener("click", () => {
+      answers = Array(questions.length).fill(null);
+      current = 0;
+      show(intro);
+      updateProgress();
+    });
+
+    document.querySelector("#reviewBtn").addEventListener("click", () => {
+      current = 0;
+      show(questionScreen);
+      renderQuestion();
+    });
+
+    window.addEventListener("resize", fitAllText);
+
+    updateProgress();
+  </script>
+</body>
+</html>
