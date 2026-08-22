@@ -428,6 +428,55 @@
       gap: 18px;
     }
 
+    .qr-panel {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid rgba(24, 34, 31, .08);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .68);
+    }
+
+    .qr-title {
+      margin: 0;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .qr-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .qr-item {
+      display: grid;
+      justify-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .qr-item img {
+      width: 86px;
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #fff;
+      box-shadow: 0 8px 18px rgba(24, 34, 31, .1);
+    }
+
+    .qr-item span {
+      max-width: 100%;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+      word-break: keep-all;
+    }
+
     #questionText {
       min-height: 118px;
       display: flex;
@@ -553,6 +602,15 @@
         gap: 14px;
       }
 
+      .qr-panel {
+        padding: 12px;
+        gap: 10px;
+      }
+
+      .qr-item img {
+        width: 72px;
+      }
+
       #resultDescription {
         min-height: 86px;
         line-height: 1.58;
@@ -655,6 +713,14 @@
         width: calc(50% - 6px);
       }
 
+      .qr-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .qr-item img {
+        width: 70px;
+      }
+
     }
 
   </style>
@@ -717,6 +783,23 @@
             <div class="level" id="levelText">결과</div>
             <h2 id="resultTitle"></h2>
             <p id="resultDescription"></p>
+            <div class="qr-panel" aria-label="폰쉼 앱 안내 QR 코드">
+              <p class="qr-title">폰쉼을 바로 시작해보세요</p>
+              <div class="qr-list">
+                <div class="qr-item">
+                  <img src="image/폰쉼구글그룹스.png" alt="폰쉼 구글 그룹스 QR 코드">
+                  <span>구글 그룹스</span>
+                </div>
+                <div class="qr-item">
+                  <img src="image/폰쉼테스터웹링크.png" alt="폰쉼 테스터 웹 링크 QR 코드">
+                  <span>테스터 웹</span>
+                </div>
+                <div class="qr-item">
+                  <img src="image/폰쉼테스트앱링크.png" alt="폰쉼 테스트 앱 링크 QR 코드">
+                  <span>테스트 앱</span>
+                </div>
+              </div>
+            </div>
             <div class="actions">
               <button class="btn ghost" id="reviewBtn" type="button">답변 보기</button>
               <button class="btn primary" id="restartBtn" type="button">다시 진단</button>
